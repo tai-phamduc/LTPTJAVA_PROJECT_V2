@@ -176,16 +176,16 @@ public class Server {
                     String coachType = payload.get("coachType");
                     int capacity = Integer.parseInt(payload.get("capacity"));
                     String trainID = payload.get("trainID");
-                    Coach coach = new Coach(coachNumber, coachType, capacity, new Train(trainID));
+                    Coach coach = new Coach(coachNumber, coachType, capacity, new Train(trainID, "", ""));
                     yield coachDAO.addCoach(coach);
                 }
                 case "getCoaches" -> {
-                    Train train = new Train(payload.get("trainID"));
+                    Train train = new Train(payload.get("trainID"), "", "");
                     List<Coach> coaches = coachDAO.getCoaches(train);
                     yield coaches != null ? coaches : new ArrayList<Coach>();
                 }
                 case "removeCoaches" ->
-                        coachDAO.removeCoaches(new Train(payload.get("trainID")));
+                        coachDAO.removeCoaches(new Train(payload.get("trainID"), "", ""));
                 case "getCoachByID" ->
                         coachDAO.getCoachByID(Integer.parseInt(payload.get("coachID")));
                 default -> "Unknown coach action: " + action;
@@ -204,14 +204,14 @@ public class Server {
             Object result = switch (action) {
                 case "getAllTrainDetails" -> trainDAO.getAllTrainDetails();
                 case "addNewTrain" -> {
-                    Train train = new Train(payload.get("trainNumber"));
+                    Train train = new Train("", payload.get("trainNumber"), "");
                     train.setStatus(payload.get("status"));
                     yield trainDAO.addNewTrain(train);
                 }
                 case "deleteTrainByID" -> trainDAO.deleteTrainByID(payload.get("trainID"));
                 case "getTrainByID" -> trainDAO.getTrainByID(payload.get("trainID"));
                 case "getNumberOfCoaches" ->
-                        trainDAO.getNumberOfCoaches(new Train(payload.get("trainID")));
+                        trainDAO.getNumberOfCoaches(new Train(payload.get("trainID"), "", ""));
                 case "updateTrain" -> {
                     Train train = new Train(
                             payload.get("trainID"),
@@ -444,7 +444,7 @@ public class Server {
                 case "addTrainJourney" -> {
                     TrainJourney trainJourney = new TrainJourney();
                     trainJourney.setTraInJourneyName(payload.get("trainJourneyName"));
-                    trainJourney.setTrain(new Train(payload.get("trainID")));
+                    trainJourney.setTrain(new Train(payload.get("trainID"), "", ""));
                     trainJourney.setLine(new Line(payload.get("lineID")));
                     trainJourney.setBasePrice(Double.parseDouble(payload.get("basePrice")));
                     yield trainJourneyDAO.addTrainJourney(trainJourney);

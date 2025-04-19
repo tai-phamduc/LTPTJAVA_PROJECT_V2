@@ -202,9 +202,11 @@ public class TrainAddingDialog extends JDialog implements ActionListener {
 		if (e.getSource().equals(themTauButton)) {
 			String soHieuTau = soHieuTauTextField.getText().trim();
 			String trangThai = (String) trangThaiCombobox.getSelectedItem();
+
             HashMap<String, String> trainPayload = new HashMap<>();
             trainPayload.put("trainNumber", soHieuTau);
             trainPayload.put("status", trangThai);
+
             String trainID = (String) ServerFetcher.fetch("train", "addNewTrain", trainPayload);
 
 	        for (int i = 0; i < n; i++) {

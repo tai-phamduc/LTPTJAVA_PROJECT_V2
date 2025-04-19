@@ -19,10 +19,6 @@ public class Train implements Serializable {
 		this.status = trangThai;
 	}
 
-	public Train(String trainID) {
-		this.trainID = trainID;
-	}
-
 
 	public String getTrainID() {
 		return trainID;

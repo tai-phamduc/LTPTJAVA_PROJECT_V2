@@ -314,7 +314,7 @@ public class TrainJourneyDAO {
 			ResultSet rs = s.executeQuery();
 			while (rs.next()) {
 				String trainJourneyID = rs.getString("trainJourneyID");
-				Train train = new Train(rs.getString("trainID"));
+				Train train = new Train(rs.getString("trainID"), "", "");
 				train.setTrainNumber(rs.getString("trainNumber"));
 				int numberOfAvailableSeatsLeft = rs.getInt("numberOfAvailableSeatsLeft");
 				LocalDate departureDate = rs.getDate("departureDate").toLocalDate();
