@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -21,12 +22,12 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.io.FilenameUtils;
 
-import dao.ServiceDAO;
 import entity.Service;
 import net.miginfocom.swing.MigLayout;
 import raven.crazypanel.CrazyPanel;
 import raven.toast.Notifications;
 import raven.toast.Notifications.Location;
+import utils.ServerFetcher;
 
 public class ServiceAddingDialog extends JDialog {
 	/**
@@ -34,7 +35,6 @@ public class ServiceAddingDialog extends JDialog {
 	 */
 	private static final long serialVersionUID = 1L;
 	private FormFoodManagement formFoodManagement;
-	private ServiceDAO serviceDAO;
 	private CrazyPanel container;
 	private JLabel imageSourceLabel;
 	private JButton imageSourceButton;
@@ -55,7 +55,6 @@ public class ServiceAddingDialog extends JDialog {
 	private FormDrinkManagement formDrinkManagement;
 
 	public ServiceAddingDialog(String type) {
-		serviceDAO = new ServiceDAO();
 //		setLayout(new BorderLayout());
 		initComponents(type);
 	}
@@ -220,7 +219,14 @@ public class ServiceAddingDialog extends JDialog {
 
 			// create a new movie object
 			Service newService = new Service(name, Double.parseDouble(purchasePrice), type, imagePath);
-			String serviceID = serviceDAO.addNewService(newService);
+
+			HashMap<String, String> payload = new HashMap<>();
+			payload.put("serviceName", newService.getServiceName());
+			payload.put("price", String.valueOf(newService.getPrice()));
+			payload.put("type", newService.getType());
+			payload.put("imageSource", newService.getImageSource());
+			String serviceID = (String) ServerFetcher.fetch("service", "addNewService", payload);
+
 			newService.setServiceID(serviceID);
 			// add a record in the database
 			if (serviceID != null) {

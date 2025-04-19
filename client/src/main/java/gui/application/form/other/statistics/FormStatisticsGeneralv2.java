@@ -14,8 +14,6 @@ import javax.swing.JPanel;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
-import dao.CoachTypeTotalIncomeDAO;
-import dao.OrderDAO;
 import entity.*;
 import gui.other.SimpleForm;
 import net.miginfocom.swing.MigLayout;
@@ -39,7 +37,6 @@ public class FormStatisticsGeneralv2 extends SimpleForm {
 	private JComboBox<Year> yearComboBox;
 	private JPanel container2;
 	private PieChart totalIncomePieChart;
-	private CoachTypeTotalIncomeDAO coachTypeTotalIncomeDAO;
 	private PieChart coachTypeTotalIncomePieChart;
 	private List<CoachTypeTotalIncome> coachTypeTotalIncomeList;
 	private int renderTime = 1;
@@ -47,15 +44,12 @@ public class FormStatisticsGeneralv2 extends SimpleForm {
 	private Year yearSelected;
 	private JPanel container3;
 	private HorizontalBarChart barChart;
-	private OrderDAO orderDAO;
 	private int numberOfOrdersWithService;
 	private int numberOfOrdersWithoutService;
 	private JPanel containerSuper2;
 
 	public FormStatisticsGeneralv2(Employee employee) {
 
-		coachTypeTotalIncomeDAO = new CoachTypeTotalIncomeDAO();
-		orderDAO = new OrderDAO();
 		decimalFormat = new DecimalFormat("#,###");
 
 		this.setLayout(new BorderLayout());
@@ -70,12 +64,19 @@ public class FormStatisticsGeneralv2 extends SimpleForm {
 		payload.put("year", String.valueOf(LocalDate.now().getYear()));
 
 		totalIncome = (TotalIncome) ServerFetcher.fetch("income", "getTotalIncome", payload);
-		coachTypeTotalIncomeList = coachTypeTotalIncomeDAO.getCoachTypeTotalIncome(LocalDate.now().getMonthValue(),
-				LocalDate.now().getYear());
-		numberOfOrdersWithService = orderDAO.getNumberOfOrderWithService(LocalDate.now().getMonthValue(),
-				LocalDate.now().getYear());
-		numberOfOrdersWithoutService = orderDAO.getNumberOfOrderWithoutService(LocalDate.now().getMonthValue(),
-				LocalDate.now().getYear());
+
+		payload = new HashMap<>();
+		payload.put("month", String.valueOf(LocalDate.now().getMonthValue()));
+		payload.put("year", String.valueOf(LocalDate.now().getYear()));
+		coachTypeTotalIncomeList = (List<CoachTypeTotalIncome>)
+				ServerFetcher.fetch("coachtypeincome", "getCoachTypeTotalIncome", payload);
+
+		HashMap<String, String> statsPayload = new HashMap<>();
+		statsPayload.put("month", String.valueOf(LocalDate.now().getMonthValue()));
+		statsPayload.put("year", String.valueOf(LocalDate.now().getYear()));
+		numberOfOrdersWithService = (Integer) ServerFetcher.fetch("order", "getNumberOfOrderWithService", statsPayload);
+		numberOfOrdersWithoutService = (Integer) ServerFetcher.fetch("order", "getNumberOfOrderWithoutService", statsPayload);
+
 		// state
 
 		// render
@@ -129,9 +130,19 @@ public class FormStatisticsGeneralv2 extends SimpleForm {
 			payload.put("month", String.valueOf(selectedMonth));
 			payload.put("year", String.valueOf(selectedYear));
 			totalIncome = (TotalIncome) ServerFetcher.fetch("income", "getTotalIncome", payload);
-			coachTypeTotalIncomeList = coachTypeTotalIncomeDAO.getCoachTypeTotalIncome(selectedMonth, selectedYear);
-			numberOfOrdersWithService = orderDAO.getNumberOfOrderWithService(selectedMonth, selectedYear);
-			numberOfOrdersWithoutService = orderDAO.getNumberOfOrderWithoutService(selectedMonth, selectedYear);
+
+			payload = new HashMap<>();
+			payload.put("month", String.valueOf(selectedMonth));
+			payload.put("year", String.valueOf(selectedYear));
+			coachTypeTotalIncomeList = (List<CoachTypeTotalIncome>)
+					ServerFetcher.fetch("coachtypeincome", "getCoachTypeTotalIncome", payload);
+
+			HashMap<String, String> statsPayload = new HashMap<>();
+			statsPayload.put("month", String.valueOf(selectedMonth));
+			statsPayload.put("year", String.valueOf(selectedYear));
+			numberOfOrdersWithService = (Integer) ServerFetcher.fetch("order", "getNumberOfOrderWithService", statsPayload);
+			numberOfOrdersWithoutService = (Integer) ServerFetcher.fetch("order", "getNumberOfOrderWithoutService", statsPayload);
+
 			render();
 		});
 		yearComboBox.addActionListener(e -> {
@@ -142,9 +153,19 @@ public class FormStatisticsGeneralv2 extends SimpleForm {
 			payload.put("month", String.valueOf(selectedMonth));
 			payload.put("year", String.valueOf(selectedYear));
 			totalIncome = (TotalIncome) ServerFetcher.fetch("income", "getTotalIncome", payload);
-			coachTypeTotalIncomeList = coachTypeTotalIncomeDAO.getCoachTypeTotalIncome(selectedMonth, selectedYear);
-			numberOfOrdersWithService = orderDAO.getNumberOfOrderWithService(selectedMonth, selectedYear);
-			numberOfOrdersWithoutService = orderDAO.getNumberOfOrderWithoutService(selectedMonth, selectedYear);
+
+			payload = new HashMap<>();
+			payload.put("month", String.valueOf(selectedMonth));
+			payload.put("year", String.valueOf(selectedYear));
+			coachTypeTotalIncomeList = (List<CoachTypeTotalIncome>)
+					ServerFetcher.fetch("coachtypeincome", "getCoachTypeTotalIncome", payload);
+
+			HashMap<String, String> statsPayload = new HashMap<>();
+			statsPayload.put("month", String.valueOf(selectedMonth));
+			statsPayload.put("year", String.valueOf(selectedYear));
+			numberOfOrdersWithService = (Integer) ServerFetcher.fetch("order", "getNumberOfOrderWithService", statsPayload);
+			numberOfOrdersWithoutService = (Integer) ServerFetcher.fetch("order", "getNumberOfOrderWithoutService", statsPayload);
+
 			render();
 		});
 		container1.add(container1Left);

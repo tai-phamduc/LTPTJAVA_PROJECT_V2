@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -25,12 +25,12 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.apache.commons.io.FilenameUtils;
 
-import dao.ServiceDAO;
 import entity.Service;
 import net.miginfocom.swing.MigLayout;
 import raven.crazypanel.CrazyPanel;
 import raven.toast.Notifications;
 import raven.toast.Notifications.Location;
+import utils.ServerFetcher;
 
 public class ServiceUpdateDialog extends JDialog {
 	/**
@@ -38,7 +38,6 @@ public class ServiceUpdateDialog extends JDialog {
 	 */
 	private static final long serialVersionUID = 1L;
 	private FormFoodManagement formFoodManagement;
-	private ServiceDAO serviceDAO;
 	private CrazyPanel container;
 	private JLabel imageSourceLabel;
 	private JButton imageSourceButton;
@@ -60,7 +59,6 @@ public class ServiceUpdateDialog extends JDialog {
 	private FormDrinkManagement formDrinkManagement;
 
 	public ServiceUpdateDialog(Service service) {
-		serviceDAO = new ServiceDAO();
 		filter = new FileNameExtensionFilter("Images", "jpg", "png", "gif", "bmp");
 //		setLayout(new BorderLayout());
 		initComponents(service);
@@ -259,7 +257,14 @@ public class ServiceUpdateDialog extends JDialog {
 						service.getType(), imagePath);
 
 				// UPDATE a record in the database
-				if (serviceDAO.updateNewProduct(newProduct)) {
+				HashMap<String, String> payload = new HashMap<>();
+				payload.put("serviceID", newProduct.getServiceID());
+				payload.put("serviceName", newProduct.getServiceName());
+				payload.put("price", String.valueOf(newProduct.getPrice()));
+				payload.put("type", newProduct.getType());
+				payload.put("imageSource", newProduct.getImageSource());
+				boolean isUpdated = (Boolean) ServerFetcher.fetch("service", "updateNewProduct", payload);
+				if (isUpdated) {
 					Notifications.getInstance().show(Notifications.Type.INFO, Location.BOTTOM_LEFT,
 							"Cập nhật thành công!");
 					System.out.println(newProduct);

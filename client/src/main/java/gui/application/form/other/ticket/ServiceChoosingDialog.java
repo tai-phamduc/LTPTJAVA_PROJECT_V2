@@ -4,6 +4,7 @@ import java.awt.Image;
 import java.awt.MediaTracker;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -20,9 +21,9 @@ import javax.swing.SpinnerNumberModel;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
-import dao.ServiceDAO;
 import entity.*;
 import net.miginfocom.swing.MigLayout;
+import utils.ServerFetcher;
 
 public class ServiceChoosingDialog extends JDialog {
 
@@ -36,7 +37,6 @@ public class ServiceChoosingDialog extends JDialog {
 	private JLabel chonDichVuLabel;
 	private JPanel container2;
 	private List<String> danhSachLoaiDichVu;
-	private ServiceDAO serviceDAO;
 	private String currentServiceType;
 	private List<Service> currentServiceList;
 	private JPanel serviceListContainer;
@@ -57,13 +57,15 @@ public class ServiceChoosingDialog extends JDialog {
 								 Customer customer, Employee employee, PassengerInfoAddingDialog passengerInfoAddingDialog, TicketInfo ticketInfo) {
 
 		this.passengerInfoAddingDialog = passengerInfoAddingDialog;
-		serviceDAO = new ServiceDAO();
 
-		danhSachLoaiDichVu = serviceDAO.getAllServiceTypes();
+		HashMap<String, String> payload = new HashMap<>();
+		danhSachLoaiDichVu = (List<String>) ServerFetcher.fetch("service", "getAllServiceTypes", payload);
 
 		// state
 		currentServiceType = danhSachLoaiDichVu.get(0);
-		currentServiceList = serviceDAO.getServiceByType(currentServiceType);
+		payload = new HashMap<>();
+		payload.put("type", currentServiceType);
+		currentServiceList = (List<Service>) ServerFetcher.fetch("service", "getServiceByType", payload);
 		chosenServiceDetailList = new ArrayList<ServiceDetail>();
 		// state
 
@@ -214,7 +216,9 @@ public class ServiceChoosingDialog extends JDialog {
 			serviceTypeContainer.add(serviceTypeButon, "growx, growy, push");
 			serviceTypeButon.addActionListener(e -> {
 				currentServiceType = serviceType;
-				currentServiceList = serviceDAO.getServiceByType(currentServiceType);
+				HashMap<String, String> payload = new HashMap<>();
+				payload.put("type", currentServiceType);
+				currentServiceList = (List<Service>) ServerFetcher.fetch("service", "getServiceByType", payload);
 				reactToServiceTypeChanged();
 			});
 		}

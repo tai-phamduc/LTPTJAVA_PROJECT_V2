@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -24,9 +25,9 @@ import javax.swing.table.TableCellRenderer;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
-import dao.PassengerDAO;
 import entity.Passenger;
 import net.miginfocom.swing.MigLayout;
+import utils.ServerFetcher;
 
 public class FormCustomerManagement extends JPanel implements ActionListener {
 
@@ -38,14 +39,11 @@ public class FormCustomerManagement extends JPanel implements ActionListener {
 	private JPanel container0;
 	private JPanel container1;
 
-	private PassengerDAO passengerDAO;
 	private CustomerTableModel customerTableModel;
 	private JTable customerTable;
 	private CustomerUpdateDialog customerUpdateDialog;
 
 	public FormCustomerManagement() {
-
-		passengerDAO = new PassengerDAO();
 
 		setLayout(new BorderLayout());
 		container0 = new JPanel();
@@ -159,7 +157,9 @@ public class FormCustomerManagement extends JPanel implements ActionListener {
 						"Warning", JOptionPane.YES_NO_OPTION);
 				if (option == JOptionPane.YES_OPTION) {
 					String customerID = (String) customerTable.getValueAt(selectedRow, 0);
-					boolean isSuccessful = passengerDAO.removePassengerByID(customerID);
+					HashMap<String, String> payload = new HashMap<>();
+					payload.put("passengerIDToDelete", customerID);
+					boolean isSuccessful = (Boolean) ServerFetcher.fetch("passenger", "removePassengerByID", payload);
 					if (isSuccessful) {
 						handleSearch();
 					} else {
@@ -175,7 +175,11 @@ public class FormCustomerManagement extends JPanel implements ActionListener {
 					JOptionPane.showMessageDialog(this, "Vui lòng chọn một dòng để cập nhật.");
 				} else {
 					String passengerID = (String) customerTable.getValueAt(selectedRow, 0);
-					Passenger passenger = passengerDAO.getPassengerByID(passengerID);
+
+					HashMap<String, String> payload = new HashMap<>();
+					payload.put("passengerIDToFind", passengerID);
+					Passenger passenger = (Passenger) ServerFetcher.fetch("passenger", "getPassengerByID", payload);
+
 					System.out.println(passenger);
 					customerUpdateDialog = new CustomerUpdateDialog(passenger);
 					customerUpdateDialog.setFormCustomerManagement(this);
@@ -192,11 +196,17 @@ public class FormCustomerManagement extends JPanel implements ActionListener {
 		String searchBy = (String) cboFilter.getSelectedItem();
 		String searchText = txtSearch.getText().trim();
 		if (searchBy.equalsIgnoreCase("Theo Tên")) {
-			List<Passenger> passengers = passengerDAO.findPassengersByName(searchText);
+
+			HashMap<String, String> payload = new HashMap<>();
+			payload.put("nameToFind", searchText);
+			List<Passenger> passengers = (List<Passenger>) ServerFetcher.fetch("passenger", "findPassengersByName", payload);
+
 			customerTableModel.setCustomerList(passengers);
 			customerTableModel.fireTableDataChanged();
 		} else if (searchBy.equalsIgnoreCase("Theo Số Định Danh")) {
-			List<Passenger> passengers = passengerDAO.findPassengersByIdentifier(searchText);
+			HashMap<String, String> payload = new HashMap<>();
+			payload.put("identifierToFind", searchText);
+			List<Passenger> passengers = (List<Passenger>) ServerFetcher.fetch("passenger", "findPassengersByIdentifier", payload);
 			customerTableModel.setCustomerList(passengers);
 			customerTableModel.fireTableDataChanged();
 		}

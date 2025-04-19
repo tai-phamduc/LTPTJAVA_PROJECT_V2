@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -23,12 +24,12 @@ import javax.swing.table.TableCellRenderer;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
-import dao.EmployeeDAO;
 import entity.Employee;
 import net.miginfocom.swing.MigLayout;
 import raven.toast.Notifications;
 import raven.toast.Notifications.Location;
 import raven.toast.Notifications.Type;
+import utils.ServerFetcher;
 
 public class FormEmployeeManagement extends JPanel implements ActionListener {
 
@@ -39,7 +40,6 @@ public class FormEmployeeManagement extends JPanel implements ActionListener {
 	private JPanel container0;
 	private JPanel container1;
 
-	private EmployeeDAO employeeDAO;
 	private JButton addNewButton;
 	private EmployeeTableModel employeeTableModel;
 	private JTable employeeTable;
@@ -50,8 +50,6 @@ public class FormEmployeeManagement extends JPanel implements ActionListener {
 	public FormEmployeeManagement(Employee currentEmployee) {
 
 		this.currentEmployee = currentEmployee;
-
-		employeeDAO = new EmployeeDAO();
 
 		setLayout(new BorderLayout());
 		container0 = new JPanel();
@@ -171,7 +169,11 @@ public class FormEmployeeManagement extends JPanel implements ActionListener {
 							"Vui lòng chọn một dòng để cập nhật!");
 				} else {
 					String employeeID = (String) employeeTable.getValueAt(selectedRow, 0);
-					Employee employee = employeeDAO.getEmployeeByID(employeeID);
+
+					HashMap<String, String> payload = new HashMap<>();
+					payload.put("employeeIDToFind", employeeID);
+					Employee employee = (Employee) ServerFetcher.fetch("employee", "getEmployeeByID", payload);
+
 					employeeUpdateDialog = new EmployeeUpdateDialog(employee);
 					employeeUpdateDialog.setFormStaffManagement(this);
 					employeeUpdateDialog.setModal(true);
@@ -196,7 +198,11 @@ public class FormEmployeeManagement extends JPanel implements ActionListener {
 				int option = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa nhân viên này?",
 						"Warning", JOptionPane.YES_NO_OPTION);
 				if (option == JOptionPane.YES_OPTION) {
-					boolean isSuccessful = employeeDAO.removeEmployeeByID(employeeID);
+
+					HashMap<String, String> payload = new HashMap<>();
+					payload.put("employeeIDToDelete", employeeID);
+					boolean isSuccessful = (Boolean) ServerFetcher.fetch("employee", "removeEmployeeByID", payload);
+
 					if (isSuccessful) {
 						Notifications.getInstance().show(Type.SUCCESS, Location.TOP_CENTER,
 								"Xóa nhân viên thành công!");
@@ -214,7 +220,9 @@ public class FormEmployeeManagement extends JPanel implements ActionListener {
 
 	public void handleSearch() {
 		String nameToFind = searchTextField.getText().trim();
-		List<Employee> employeeList = employeeDAO.findEmployeByName(nameToFind);
+		HashMap<String, String> payload = new HashMap<>();
+		payload.put("nameToFind", nameToFind);
+		List<Employee> employeeList = (List<Employee>) ServerFetcher.fetch("employee", "findEmployeeByName", payload);
 		employeeTableModel.setEmployeeList(employeeList);
 		employeeTableModel.fireTableDataChanged();
 	}

@@ -27,7 +27,11 @@ public class Customer implements Serializable {
 		this.identificationNumber = identificationNumber;
 	}
 
-	public String getCustomerID() {
+    public Customer(String customerID) {
+		this.customerID = customerID;
+    }
+
+    public String getCustomerID() {
 		return customerID;
 	}
 

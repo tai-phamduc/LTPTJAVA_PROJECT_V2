@@ -1,12 +1,13 @@
 package gui.application.form.other.employee;
 
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import dao.EmployeeDAO;
 import entity.Employee;
+import utils.ServerFetcher;
 
 public class EmployeeTableModel extends AbstractTableModel {
 
@@ -14,11 +15,10 @@ public class EmployeeTableModel extends AbstractTableModel {
 	private List<Employee> employeeList;
 	private String[] columnNames = { "Mã Nhân Viên", "Họ Tên", "Giới Tính", "Ngày Sinh", "Email", "Số Điện Thoại",
 			"Chức Vụ" };
-	private EmployeeDAO employeeDAO;
 
 	public EmployeeTableModel() {
-		employeeDAO = new EmployeeDAO();
-		employeeList = employeeDAO.getAllEmployees();
+		HashMap<String, String> payload = new HashMap<>();
+		employeeList = (List<Employee>) ServerFetcher.fetch("employee", "getAllEmployees", payload);
 	}
 
 	@Override

@@ -23,7 +23,6 @@ import com.raven.datechooser.EventDateChooser;
 import com.raven.datechooser.SelectedAction;
 import com.raven.datechooser.SelectedDate;
 
-import dao.EmployeeDAO;
 import entity.Account;
 import entity.Employee;
 import net.miginfocom.swing.MigLayout;
@@ -39,7 +38,6 @@ public class EmployeeAddingDialog extends JDialog implements ActionListener {
 	 */
 	private static final long serialVersionUID = 1L;
 	// Note: remember to add clear button
-	private EmployeeDAO employeeDAO;
 	private CrazyPanel container;
 	private JLabel title;
 	private FormEmployeeManagement formStaffManagement;
@@ -73,7 +71,6 @@ public class EmployeeAddingDialog extends JDialog implements ActionListener {
 	private JLabel errorMessageLabel;
 
 	public EmployeeAddingDialog() {
-		employeeDAO = new EmployeeDAO();
 		setLayout(new BorderLayout());
 		initComponents();
 	}
@@ -296,7 +293,17 @@ public class EmployeeAddingDialog extends JDialog implements ActionListener {
 			boolean genderBoolean = gender.equals("Nam") ? true : false;
 			Employee newEmployee = new Employee(fullName, genderBoolean, dateOfBirthLocalDate, email, phoneNumber, role,
 					startDateLocalDate);
-			String employeeID = employeeDAO.addNewEmployee(newEmployee);
+
+			HashMap<String, String> payload = new HashMap<>();
+			payload.put("fullName", newEmployee.getFullName());
+			payload.put("gender", String.valueOf(newEmployee.isGender()));
+			payload.put("dateOfBirth", newEmployee.getDateOfBirth().toString());
+			payload.put("email", newEmployee.getEmail());
+			payload.put("phoneNumber", newEmployee.getPhoneNumber());
+			payload.put("role", newEmployee.getRole());
+			payload.put("startingDate", newEmployee.getStartingDate().toString());
+			String employeeID = (String) ServerFetcher.fetch("employee", "addNewEmployee", payload);
+
 			newEmployee.setEmployeeID(employeeID);
 			Account newAccount = new Account(username, password, newEmployee);
 

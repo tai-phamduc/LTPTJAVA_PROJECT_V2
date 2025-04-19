@@ -3,6 +3,7 @@ package gui.application.form.other.statistics;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -17,12 +18,12 @@ import javax.swing.table.TableCellRenderer;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
-import dao.CustomerRankingDAO;
 import entity.CustomerRanking;
 import entity.Employee;
 import entity.Month;
 import entity.Year;
 import net.miginfocom.swing.MigLayout;
+import utils.ServerFetcher;
 
 public class FormStatisticsCustomer extends JPanel {
 
@@ -38,10 +39,9 @@ public class FormStatisticsCustomer extends JPanel {
 	private JTable bangXepHangKhachHangTable;
 	private BangXepHangKhachHangModel bangXepHangKhachHangTableModel;
 	private List<CustomerRanking> customerRankingList;
-	private CustomerRankingDAO customerRankingDAO;
+	private HashMap<String, String> payload;
 
 	public FormStatisticsCustomer(Employee employee) {
-		customerRankingDAO = new CustomerRankingDAO();
 		this.setLayout(new BorderLayout());
 		superContainer = new JPanel(new MigLayout("wrap, fill, insets 20", "[fill]", "[fill]"));
 		container = new JPanel(new MigLayout("wrap, fill", "[fill]", "[][]"));
@@ -49,7 +49,12 @@ public class FormStatisticsCustomer extends JPanel {
 		// state
 		monthSelected = new Month(LocalDate.now().getMonthValue());
 		yearSelected = new Year(LocalDate.now().getYear());
-		customerRankingList = customerRankingDAO.getTop10CustomerRanking(LocalDate.now().getMonthValue(), LocalDate.now().getYear());
+		payload = new HashMap<>();
+		payload.put("month", String.valueOf(LocalDate.now().getMonthValue()));
+		payload.put("year", String.valueOf(LocalDate.now().getYear()));
+
+		customerRankingList = (List<CustomerRanking>)
+				ServerFetcher.fetch("customerranking", "getTop10CustomerRanking", payload);
 		// state
 		
 		// render
@@ -90,14 +95,27 @@ public class FormStatisticsCustomer extends JPanel {
 			monthSelected = (Month) monthCombobox.getSelectedItem();
 			int selectedMonth = ((Month)monthCombobox.getSelectedItem()).getValue();
 			int selectedYear = ((Year)yearComboBox.getSelectedItem()).getValue();
-			customerRankingList = customerRankingDAO.getTop10CustomerRanking(selectedMonth, selectedYear);
+
+			payload = new HashMap<>();
+			payload.put("month", String.valueOf(selectedMonth));
+			payload.put("year", String.valueOf(selectedYear));
+
+			customerRankingList = (List<CustomerRanking>)
+					ServerFetcher.fetch("customerranking", "getTop10CustomerRanking", payload);
+
 			render();
 		});
 		yearComboBox.addActionListener(e -> {
 			monthSelected = (Month) monthCombobox.getSelectedItem();
 			int selectedMonth = ((Month)monthCombobox.getSelectedItem()).getValue();
 			int selectedYear = ((Year)yearComboBox.getSelectedItem()).getValue();
-			customerRankingList = customerRankingDAO.getTop10CustomerRanking(selectedMonth, selectedYear);
+
+			payload = new HashMap<>();
+			payload.put("month", String.valueOf(selectedMonth));
+			payload.put("year", String.valueOf(selectedYear));
+			customerRankingList = (List<CustomerRanking>)
+					ServerFetcher.fetch("customerranking", "getTop10CustomerRanking", payload);
+
 			render();
 		});
 		container1.add(titleLabel);

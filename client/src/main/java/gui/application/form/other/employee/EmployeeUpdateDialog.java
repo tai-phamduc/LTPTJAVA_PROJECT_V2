@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -21,12 +22,12 @@ import com.raven.datechooser.EventDateChooser;
 import com.raven.datechooser.SelectedAction;
 import com.raven.datechooser.SelectedDate;
 
-import dao.EmployeeDAO;
 import entity.Employee;
 import net.miginfocom.swing.MigLayout;
 import raven.crazypanel.CrazyPanel;
 import raven.toast.Notifications;
 import raven.toast.Notifications.Location;
+import utils.ServerFetcher;
 
 public class EmployeeUpdateDialog extends JDialog implements ActionListener {
 
@@ -35,7 +36,6 @@ public class EmployeeUpdateDialog extends JDialog implements ActionListener {
 	 */
 	private static final long serialVersionUID = 1L;
 	// Note: remember to add clear button
-	private EmployeeDAO employeeDAO;
 	private CrazyPanel container;
 	private JLabel title;
 	private FormEmployeeManagement formStaffManagement;
@@ -73,7 +73,6 @@ public class EmployeeUpdateDialog extends JDialog implements ActionListener {
 
 	public EmployeeUpdateDialog(Employee employee) {
 		this.employee = employee;
-		employeeDAO = new EmployeeDAO();
 //		accountDAO = new AccountDAO();
 //		account = accountDAO.getAccountByEmployeeID(employee.getEmployeeID());
 		setLayout(new BorderLayout());
@@ -297,7 +296,18 @@ public class EmployeeUpdateDialog extends JDialog implements ActionListener {
 
 			Employee newEmployee = new Employee(employee.getEmployeeID(), fullName, genderBoolean, dateOfBirthLocalDate,
 					email, phoneNumber, role, startDateLocalDate);
-			employeeDAO.updateEmployee(newEmployee);
+
+			HashMap<String, String> payload = new HashMap<>();
+			payload.put("employeeID", newEmployee.getEmployeeID());
+			payload.put("fullName", newEmployee.getFullName());
+			payload.put("gender", String.valueOf(newEmployee.isGender()));
+			payload.put("dateOfBirth", newEmployee.getDateOfBirth().toString());
+			payload.put("email", newEmployee.getEmail());
+			payload.put("phoneNumber", newEmployee.getPhoneNumber());
+			payload.put("role", newEmployee.getRole());
+			payload.put("startingDate", newEmployee.getStartingDate().toString());
+
+			boolean isUpdated = (Boolean) ServerFetcher.fetch("employee", "updateEmployee", payload);
 
 //			if (!(username.equals(account.getUsername()) && password.equals(account.getPassword()))) {
 //				if (username.equals("")) {

@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -21,15 +20,12 @@ import javax.swing.JTextField;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
-import dao.SeatDAO;
 import entity.Coach;
 import entity.Seat;
 import entity.Train;
 import gui.application.Application;
 import net.miginfocom.swing.MigLayout;
 import raven.toast.Notifications;
-import raven.toast.Notifications.Location;
-import raven.toast.Notifications.Type;
 import utils.ServerFetcher;
 
 public class TrainUpdateDialog extends JDialog implements ActionListener {
@@ -56,7 +52,6 @@ public class TrainUpdateDialog extends JDialog implements ActionListener {
 	private JLabel trangThaiLabel;
 	private JComboBox<String> trangThaiCombobox;
 	
-	private SeatDAO seatDAO;
 	private FormTrainManagement formTrainManagement;
 	
 	private Train train;
@@ -69,8 +64,6 @@ public class TrainUpdateDialog extends JDialog implements ActionListener {
     public TrainUpdateDialog(Train train) {
     	this.train = train;
     	
-    	seatDAO = new SeatDAO();
-
         coachList = new ArrayList<>();
         try {
             HashMap<String, String> payload = new HashMap<>();
@@ -272,7 +265,10 @@ public class TrainUpdateDialog extends JDialog implements ActionListener {
                 int coachID = (int) ServerFetcher.fetch("coach", "addCoach", payload);
 
 	            for (int j = 0; j < capacity; j++) {
-	            	seatDAO.addSeat(new Seat(j+1, new Coach(coachID)));
+                    payload = new HashMap<>();
+                    payload.put("seatNumber", String.valueOf(j+1));
+                    payload.put("coachID", String.valueOf(coachID));
+                    ServerFetcher.fetch("seat", "addSeat", payload);
 	            }
 	        }
 	        

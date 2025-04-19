@@ -6,6 +6,7 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -23,11 +24,11 @@ import javax.swing.event.DocumentListener;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
-import dao.ServiceDAO;
 import entity.Service;
 import net.miginfocom.swing.MigLayout;
 import raven.toast.Notifications;
 import raven.toast.Notifications.Location;
+import utils.ServerFetcher;
 
 public class FormDrinkManagement extends JPanel {
 
@@ -40,7 +41,6 @@ public class FormDrinkManagement extends JPanel {
 	private JPanel[] servicePanelList;
 	private JPanel container;
 	private List<Service> drinks;
-	private ServiceDAO drinkDAO;
 	private JScrollPane scroll;
 	private ServiceAddingDialog productAddingDialog;
 	private ServiceUpdateDialog productUpdateDialog;
@@ -48,8 +48,11 @@ public class FormDrinkManagement extends JPanel {
 
 	public FormDrinkManagement() {
 		drinks = new ArrayList<>();
-		drinkDAO = new ServiceDAO();
-		drinks = drinkDAO.getServiceByType("Đồ uống");
+
+		HashMap<String, String> typePayload = new HashMap<>();
+		typePayload.put("type", "Đồ uống");
+		drinks = (List<Service>) ServerFetcher.fetch("service", "getServiceByType", typePayload);
+
 		drinks.sort(Comparator.comparing(Service::getServiceName));
 		init();
 	}
@@ -123,7 +126,11 @@ public class FormDrinkManagement extends JPanel {
 
 	public void search() {
 		List<Service> drinkListSearch = new ArrayList<Service>();
-		drinkListSearch = drinkDAO.findDrinkByName(searchTextField.getText().trim());
+
+		HashMap<String, String> searchPayload = new HashMap<>();
+		searchPayload.put("serviceName", searchTextField.getText().trim());
+		drinkListSearch = (List<Service>) ServerFetcher.fetch("service", "findDrinkByName", searchPayload);
+
 		if (drinkListSearch.size() == 0) {
 			remove(scroll);
 			revalidate();
@@ -219,7 +226,12 @@ public class FormDrinkManagement extends JPanel {
 						"Cảnh Báo", JOptionPane.YES_NO_OPTION);
 				if (option == JOptionPane.YES_OPTION) {
 					String serviceID = drink.getServiceID();
-					if (drinkDAO.removeServiceByID(serviceID)) {
+
+					HashMap<String, String> typePayload = new HashMap<>();
+					typePayload.put("serviceID", serviceID);
+					boolean isSuccessful = (Boolean) ServerFetcher.fetch("service", "removeServiceByID", typePayload);
+
+					if (isSuccessful) {
 						Notifications.getInstance().show(Notifications.Type.INFO, Location.TOP_CENTER,
 								"Xóa thành công");
 						drinks.remove(drink);

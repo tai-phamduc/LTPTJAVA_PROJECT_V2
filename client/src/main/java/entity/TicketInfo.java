@@ -1,12 +1,12 @@
 package entity;
 
-import dao.OrderDAO;
-
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
+import java.util.HashMap;
+import utils.ServerFetcher;
 
 public class TicketInfo implements Serializable {
 	private Ticket ticket;
@@ -106,7 +106,10 @@ public class TicketInfo implements Serializable {
 	}
 
 	public double caculateRefundFee() {
-		int ticketCount = (new OrderDAO()).getTicketCountByOrderID(this.getTicket().getOrder().getOrderID());
+		HashMap<String, String> payload = new HashMap<>();
+		payload.put("orderID", this.getTicket().getOrder().getOrderID());
+		int ticketCount = (Integer) ServerFetcher.fetch("order", "getTicketCountByOrderID", payload);
+
 		double refundFee = 0;
 		double ticketPrice = this.caculateTotal();
 		double remainingHours = getRemainingHours();

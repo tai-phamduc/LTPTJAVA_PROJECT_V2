@@ -6,6 +6,7 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -23,11 +24,11 @@ import javax.swing.event.DocumentListener;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
-import dao.ServiceDAO;
 import entity.Service;
 import net.miginfocom.swing.MigLayout;
 import raven.toast.Notifications;
 import raven.toast.Notifications.Location;
+import utils.ServerFetcher;
 
 public class FormFoodManagement extends JPanel {
 
@@ -40,7 +41,6 @@ public class FormFoodManagement extends JPanel {
 	private JPanel[] servicePanelList;
 	private JPanel container;
 	private List<Service> foods;
-	private ServiceDAO foodDAO;
 	private JScrollPane scroll;
 	private ServiceAddingDialog serviceAddingDialog;
 	private ServiceUpdateDialog productUpdateDialog;
@@ -48,8 +48,9 @@ public class FormFoodManagement extends JPanel {
 
 	public FormFoodManagement() {
 		foods = new ArrayList<>();
-		foodDAO = new ServiceDAO();
-		foods = foodDAO.getServiceByType("Đồ ăn");
+		HashMap<String, String> payload = new HashMap<>();
+		payload.put("type", "Đồ ăn");
+		foods = (List<Service>) ServerFetcher.fetch("service", "getServiceByType", payload);
 		foods.sort(Comparator.comparing(Service::getServiceName));
 		init();
 	}
@@ -123,7 +124,9 @@ public class FormFoodManagement extends JPanel {
 
 	public void search() {
 		List<Service> foodListSearch = new ArrayList<Service>();
-		foodListSearch = foodDAO.findFoodByName(searchTextField.getText().trim());
+		HashMap<String, String> payload = new HashMap<>();
+		payload.put("serviceName", searchTextField.getText().trim());
+		foodListSearch = (List<Service>) ServerFetcher.fetch("service", "findFoodByName", payload);
 		if (foodListSearch.size() == 0) {
 			remove(scroll);
 			revalidate();
@@ -219,7 +222,10 @@ public class FormFoodManagement extends JPanel {
 						JOptionPane.YES_NO_OPTION);
 				if (option == JOptionPane.YES_OPTION) {
 					String serviceID = food.getServiceID();
-					if (foodDAO.removeServiceByID(serviceID)) {
+					HashMap<String, String> payload = new HashMap<>();
+					payload.put("serviceID", serviceID);
+					boolean isRemoved = (Boolean) ServerFetcher.fetch("service", "removeServiceByID", payload);
+					if (isRemoved) {
 						Notifications.getInstance().show(Notifications.Type.INFO, Location.TOP_CENTER,
 								"Xóa thành công!");
 						foods.remove(food);

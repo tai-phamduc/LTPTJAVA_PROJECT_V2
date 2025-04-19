@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -22,18 +23,17 @@ import com.raven.datechooser.EventDateChooser;
 import com.raven.datechooser.SelectedAction;
 import com.raven.datechooser.SelectedDate;
 
-import dao.PassengerDAO;
 import entity.Passenger;
 import net.miginfocom.swing.MigLayout;
 import raven.crazypanel.CrazyPanel;
 import raven.toast.Notifications;
 import raven.toast.Notifications.Location;
+import utils.ServerFetcher;
 
 public class CustomerUpdateDialog extends JDialog implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	private Passenger passenger;
-	private PassengerDAO passengerDAO;
 	private CrazyPanel container;
 	private JLabel lblTitle;
 	private JLabel lblFullName;
@@ -52,7 +52,6 @@ public class CustomerUpdateDialog extends JDialog implements ActionListener {
 
 	public CustomerUpdateDialog(Passenger passenger) {
 		this.passenger = passenger;
-		passengerDAO = new PassengerDAO();
 		setLayout(new BorderLayout());
 		initComponents();
 	}
@@ -181,7 +180,16 @@ public class CustomerUpdateDialog extends JDialog implements ActionListener {
 					passengerType);
 			System.out.println(updatePassenger);
 			// write an update query to the database with the id of this customer
-			boolean isSuccessful = passengerDAO.updatePassenger(updatePassenger);
+
+			HashMap<String, String> payload = new HashMap<>();
+			payload.put("passengerID", updatePassenger.getPassengerID());
+			payload.put("fullName", updatePassenger.getFullName());
+			payload.put("dateOfBirth", updatePassenger.getDateOfBirth().toString());
+			payload.put("identifier", updatePassenger.getIdentifier());
+			payload.put("identifierType", updatePassenger.getIdentifierType());
+			payload.put("passengerType", updatePassenger.getPassengerType());
+			boolean isSuccessful = (Boolean) ServerFetcher.fetch("passenger", "updatePassenger", payload);
+
 			if (isSuccessful) {
 				Notifications.getInstance().show(Notifications.Type.INFO, Location.BOTTOM_LEFT, "Cập nhật thành công!");
 				formCustomerManagement.handleSearch();

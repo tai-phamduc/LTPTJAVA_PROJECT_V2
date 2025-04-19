@@ -23,7 +23,6 @@ import javax.swing.JTextField;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
-import dao.SeatDAO;
 import entity.Line;
 import entity.Stop;
 import entity.Train;
@@ -44,7 +43,6 @@ public class TrainJourneyAddingDialog extends JDialog implements ActionListener 
 
 	private JButton closeButton;
 	
-	private SeatDAO seatDAO;
 	private FormTrainJourneyManagement formTrainJourneyManagement;
 	private JPanel tenChuyenTauContainer;
 	private JLabel tenChuyenTauLabel;
@@ -68,8 +66,6 @@ public class TrainJourneyAddingDialog extends JDialog implements ActionListener 
 
 	public TrainJourneyAddingDialog() {
     	this.setLayout(new BorderLayout());
-    	seatDAO = new SeatDAO();
-
     	this.setUndecorated(true);
         this.setLayout(new BorderLayout());
         superContainer = new JPanel(new MigLayout("wrap, fill, insets 24", "[fill]", "[fill]"));

@@ -20,15 +20,11 @@ import javax.swing.JTextField;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
-import dao.SeatDAO;
 import entity.Coach;
 import entity.Seat;
-import entity.Train;
 import gui.application.Application;
 import net.miginfocom.swing.MigLayout;
 import raven.toast.Notifications;
-import raven.toast.Notifications.Location;
-import raven.toast.Notifications.Type;
 import utils.ServerFetcher;
 
 public class TrainAddingDialog extends JDialog implements ActionListener {
@@ -56,12 +52,10 @@ public class TrainAddingDialog extends JDialog implements ActionListener {
 	private JLabel trangThaiLabel;
 	private JComboBox<String> trangThaiCombobox;
 	
-	private SeatDAO seatDAO;
 	private FormTrainManagement formTrainManagement;
 
     public TrainAddingDialog() {
-    	seatDAO = new SeatDAO();
-    	    	
+
     	this.setUndecorated(true);
         this.setLayout(new BorderLayout());
         container = new JPanel(new MigLayout("wrap", "[fill]", "[][][]push[]"));
@@ -222,7 +216,10 @@ public class TrainAddingDialog extends JDialog implements ActionListener {
                 int coachID = (int) ServerFetcher.fetch("coach", "addCoach", payload);
 
 	            for (int j = 0; j < capacity; j++) {
-	            	seatDAO.addSeat(new Seat(j+1, new Coach(coachID)));
+                    payload = new HashMap<>();
+                    payload.put("seatNumber", String.valueOf(j+1));
+                    payload.put("coachID", String.valueOf(coachID));
+                    int seatID = (Integer) ServerFetcher.fetch("seat", "addSeat", payload);
 	            }
 	        }
 

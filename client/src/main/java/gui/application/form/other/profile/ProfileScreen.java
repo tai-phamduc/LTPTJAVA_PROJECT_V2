@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -21,9 +22,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import entity.Employee;
 import org.apache.commons.io.FilenameUtils;
 
-import dao.EmployeeDAO;
 import net.miginfocom.swing.MigLayout;
 import raven.crazypanel.CrazyPanel;
+import utils.ServerFetcher;
 
 public class ProfileScreen extends JPanel {
 
@@ -54,11 +55,9 @@ public class ProfileScreen extends JPanel {
 	private FileNameExtensionFilter filter;
 	private File selectedFile;
 	private String imagePath;
-	private EmployeeDAO employeeDAO;
 
 	public ProfileScreen(Employee employee) {
 		setLayout(new BorderLayout());
-		employeeDAO = new EmployeeDAO();
 		fileChooser = new JFileChooser();
 		initComponents(employee);
 	}
@@ -192,7 +191,11 @@ public class ProfileScreen extends JPanel {
 	}
 
 	private void updateImagePathInDatabase(String imagePath, Employee employee) {
-		if (employeeDAO.updateAvatar(imagePath, employee.getEmployeeID())) {
+		HashMap<String, String> payload = new HashMap<>();
+		payload.put("imagePath", imagePath);
+		payload.put("employeeID", employee.getEmployeeID());
+		boolean isUpdated = (Boolean) ServerFetcher.fetch("employee", "updateAvatar", payload);
+		if (isUpdated) {
 			employee.setImageSource(imagePath);
 		}
 	}

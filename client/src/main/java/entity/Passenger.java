@@ -13,7 +13,7 @@ public class Passenger implements Serializable {
 	private String passengerType;
 
 	public Passenger(String passengerID, String fullName, LocalDate dateOfBirth, String identifier,
-			String identifierType, String passengerType) {
+					 String identifierType, String passengerType) {
 		this.passengerID = passengerID;
 		this.fullName = fullName;
 		this.dateOfBirth = dateOfBirth;
@@ -33,6 +33,10 @@ public class Passenger implements Serializable {
 		this.fullName = fullName;
 		this.identifier = identifier;
 		this.passengerType = passengerType;
+	}
+
+	public Passenger(String passengerID) {
+		this.passengerID = passengerID;
 	}
 
 	public String getPassengerID() {

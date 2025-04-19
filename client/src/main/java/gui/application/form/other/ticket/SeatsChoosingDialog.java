@@ -23,7 +23,6 @@ import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.extras.FlatSVGIcon.ColorFilter;
 
-import dao.SeatDAO;
 import entity.*;
 import net.miginfocom.swing.MigLayout;
 import utils.ServerFetcher;
@@ -46,7 +45,6 @@ public class SeatsChoosingDialog extends JDialog {
 	private Train train;
 	private List<Coach> coachList;
 	private Coach selectedCoach;
-	private SeatDAO seatDAO;
 	private List<Seat> seatsOfselectedCoach;
 	private JPanel toaConVeContainer;
 	private JLabel toaConVeLabel;
@@ -92,7 +90,6 @@ public class SeatsChoosingDialog extends JDialog {
 			this.cus = ticket.getTicket().getOrder().getCustomer();
 		}
 
-		seatDAO = new SeatDAO();
 		this.trainJourneyOptionItem = trainJourneyOptionItem;
 
 		train = trainJourneyOptionItem.getTrain();
@@ -289,6 +286,7 @@ public class SeatsChoosingDialog extends JDialog {
 					+ chosenTicket.getSeat().getSeatNumber());
 			JButton xoaButton = new JButton(new FlatSVGIcon("gui/icon/svg/removeicon.svg", 0.35f));
 			JLabel loaiToaLabel = new JLabel();
+			System.out.println(chosenTicket.getSeat().getCoach());
 			if (chosenTicket.getSeat().getCoach().getCoachType().equals("Ngồi mềm điều hòa")
 					|| chosenTicket.getSeat().getCoach().getCoachType().equals("Ngồi mềm đều hòa")) {
 				loaiToaLabel.setText("NMDH");
@@ -412,7 +410,11 @@ public class SeatsChoosingDialog extends JDialog {
 		} else if (selectedCoach.getCoachType().equals("Giường nằm khoang 4 điều hòa")) {
 			container3.setLayout(new MigLayout("flowy, wrap", "[]", "[][]"));
 		}
-		seatsOfselectedCoach = seatDAO.getSeats(selectedCoach);
+
+		HashMap<String, String> payload = new HashMap<>();
+		payload.put("coachID", String.valueOf(selectedCoach.getCoachID()));
+		seatsOfselectedCoach = (List<Seat>) ServerFetcher.fetch("seat", "getSeats", payload);
+
 		for (Seat seat : seatsOfselectedCoach) {
 			JButton seatButton = new JButton(seat.getSeatNumber() + "");
 			seatButton.setPreferredSize(new Dimension(50, 50));

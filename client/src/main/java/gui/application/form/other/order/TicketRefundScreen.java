@@ -12,7 +12,6 @@ import javax.swing.JTextField;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
-import dao.OrderDAO;
 import entity.Customer;
 import entity.Employee;
 import entity.Order;
@@ -37,10 +36,8 @@ public class TicketRefundScreen extends JPanel {
 	private CrazyPanel content;
 	private ChoosenTicketsRefundDialog showTicketInfoScreen;
 	private TicketChangeDetailInfo showChangeTicketDetailInfo;
-	private OrderDAO orderDAO;
 
 	public TicketRefundScreen(Employee employee) {
-		orderDAO = new OrderDAO();
 		container = new CrazyPanel();
 		content = new CrazyPanel();
 		lblHeader = new JLabel("Xử Lý Đổi Trả Vé");
@@ -103,7 +100,9 @@ public class TicketRefundScreen extends JPanel {
 			String email = txtEmail.getText();
 			String phone = txtPhoneNumber.getText();
 
-			Order order = orderDAO.getOrderByID(orderID);
+			HashMap<String, String> orderPayload = new HashMap<>();
+			orderPayload.put("orderID", orderID);
+			Order order = (Order) ServerFetcher.fetch("order", "getOrderByID", orderPayload);
 
 			Customer cus = order.getCustomer();
 
@@ -135,8 +134,15 @@ public class TicketRefundScreen extends JPanel {
 			String email = txtEmail.getText();
 			String phone = txtPhoneNumber.getText();
 
-			Order order = orderDAO.getOrderByID(orderID);
-			if (orderDAO.getTicketCountByOrderID(orderID) != 1) {
+			HashMap<String, String> orderPayload = new HashMap<>();
+			orderPayload.put("orderID", orderID);
+			Order order = (Order) ServerFetcher.fetch("order", "getOrderByID", orderPayload);
+
+			HashMap<String, String> ticketCountPayload = new HashMap<>();
+			ticketCountPayload.put("orderID", orderID);
+			int ticketCount = (Integer) ServerFetcher.fetch("order", "getTicketCountByOrderID", ticketCountPayload);
+
+			if (ticketCount != 1) {
 				JOptionPane.showMessageDialog(null, "Vé tập thể không được phép đổi!", "Cảnh báo",
 						JOptionPane.WARNING_MESSAGE);
 				return;

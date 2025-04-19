@@ -8,8 +8,8 @@ public class Customer implements Serializable {
 	private String phoneNumber;
 	private String email;
 	private String identificationNumber;
-	
-	
+
+
 	public Customer(String customerID, String fullName, String phoneNumber, String email, String identificationNumber) {
 		super();
 		this.customerID = customerID;
@@ -18,13 +18,17 @@ public class Customer implements Serializable {
 		this.email = email;
 		this.identificationNumber = identificationNumber;
 	}
-	
+
 	public Customer( String fullName, String phoneNumber, String email, String identificationNumber) {
 		super();
 		this.fullName = fullName;
 		this.phoneNumber = phoneNumber;
 		this.email = email;
 		this.identificationNumber = identificationNumber;
+	}
+
+	public Customer(String customerID) {
+		this.customerID = customerID;
 	}
 
 	public String getCustomerID() {

@@ -3,6 +3,7 @@ package gui.application.form.other.statistics;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -17,12 +18,12 @@ import javax.swing.table.TableCellRenderer;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
-import dao.ServiceRankingDAO;
 import entity.Employee;
 import entity.Month;
 import entity.ServiceRanking;
 import entity.Year;
 import net.miginfocom.swing.MigLayout;
+import utils.ServerFetcher;
 
 public class FormStatisticsService extends JPanel {
 
@@ -38,10 +39,8 @@ public class FormStatisticsService extends JPanel {
 	private JTable bangXepHangDichVuTable;
 	private BangXepHangDichVuModel bangXepHangDichVuTableModel;
 	private List<ServiceRanking> serviceRankingList;
-	private ServiceRankingDAO serviceRankingDAO;
 
 	public FormStatisticsService(Employee employee) {
-		serviceRankingDAO = new ServiceRankingDAO();
 		this.setLayout(new BorderLayout());
 		superContainer = new JPanel(new MigLayout("wrap, fill, insets 20", "[fill]", "[fill]"));
 		container = new JPanel(new MigLayout("wrap, fill", "[fill]", "[][]"));
@@ -49,7 +48,12 @@ public class FormStatisticsService extends JPanel {
 		// state
 		monthSelected = new Month(LocalDate.now().getMonthValue());
 		yearSelected = new Year(LocalDate.now().getYear());
-		serviceRankingList = serviceRankingDAO.getTop10ServiceRanking(LocalDate.now().getMonthValue(), LocalDate.now().getYear());
+
+		HashMap<String, String> payload = new HashMap<>();
+		payload.put("month", String.valueOf(LocalDate.now().getMonthValue()));  // June
+		payload.put("year", String.valueOf(LocalDate.now().getYear()));
+		serviceRankingList = (List<ServiceRanking>) ServerFetcher.fetch("serviceranking", "getTop10ServiceRanking", payload);
+
 		// state
 		
 		// render
@@ -90,14 +94,21 @@ public class FormStatisticsService extends JPanel {
 			monthSelected = (Month) monthCombobox.getSelectedItem();
 			int selectedMonth = ((Month)monthCombobox.getSelectedItem()).getValue();
 			int selectedYear = ((Year)yearComboBox.getSelectedItem()).getValue();
-			serviceRankingList = serviceRankingDAO.getTop10ServiceRanking(selectedMonth, selectedYear);
+
+			HashMap<String, String> payload = new HashMap<>();
+			payload.put("month", String.valueOf(selectedMonth));  // June
+			payload.put("year", String.valueOf(selectedYear));
+			serviceRankingList = (List<ServiceRanking>) ServerFetcher.fetch("serviceranking", "getTop10ServiceRanking", payload);
 			render();
 		});
 		yearComboBox.addActionListener(e -> {
 			yearSelected = (Year) yearComboBox.getSelectedItem();
 			int selectedMonth = ((Month)monthCombobox.getSelectedItem()).getValue();
 			int selectedYear = ((Year)yearComboBox.getSelectedItem()).getValue();
-			serviceRankingList = serviceRankingDAO.getTop10ServiceRanking(selectedMonth, selectedYear);
+			HashMap<String, String> payload = new HashMap<>();
+			payload.put("month", String.valueOf(selectedMonth));  // June
+			payload.put("year", String.valueOf(selectedYear));
+			serviceRankingList = (List<ServiceRanking>) ServerFetcher.fetch("serviceranking", "getTop10ServiceRanking", payload);
 			render();
 		});
 		container1.add(titleLabel);

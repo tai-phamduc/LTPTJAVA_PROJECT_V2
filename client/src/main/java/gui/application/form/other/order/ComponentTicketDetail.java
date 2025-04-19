@@ -2,6 +2,7 @@ package gui.application.form.other.order;
 
 import java.awt.event.ItemEvent;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -10,9 +11,9 @@ import javax.swing.JTextField;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
-import dao.OrderDAO;
 import entity.TicketInfo;
 import net.miginfocom.swing.MigLayout;
+import utils.ServerFetcher;
 
 public class ComponentTicketDetail extends JPanel {
 
@@ -108,8 +109,13 @@ public class ComponentTicketDetail extends JPanel {
 		int refund = giaVe - refundFee;
 
 		column6 = new JLabel(decimalFormat.format(refund));
+
+		HashMap<String, String> payload = new HashMap<>();
+		payload.put("orderID", ticket.getTicket().getOrder().getOrderID());
+		int ticketCount = (Integer) ServerFetcher.fetch("order", "getTicketCountByOrderID", payload);
+
 		column4 = new JLabel(
-				(new OrderDAO()).getTicketCountByOrderID(ticket.getTicket().getOrder().getOrderID()) > 1 ? "Vé tập thể"
+				ticketCount > 1 ? "Vé tập thể"
 						: "Vé cá nhân");
 
 		String seventhColumnValue = ticket.getTicket().getStatus().equalsIgnoreCase("Bình thường") ? "Vé chưa đổi"

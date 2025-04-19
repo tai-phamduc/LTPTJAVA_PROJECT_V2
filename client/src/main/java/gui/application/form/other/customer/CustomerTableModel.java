@@ -1,12 +1,13 @@
 package gui.application.form.other.customer;
 
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import dao.PassengerDAO;
 import entity.Passenger;
+import utils.ServerFetcher;
 
 public class CustomerTableModel extends AbstractTableModel {
 
@@ -14,11 +15,10 @@ public class CustomerTableModel extends AbstractTableModel {
 	private List<Passenger> passengers;
 	private String[] columnNames = { "Mã Hành Khách", "Họ Tên", "Ngày Sinh", "Mã Định Danh", "Loại Mã Định Danh",
 			"Đối Tượng Khách Hàng" };
-	private PassengerDAO passengerDAO;
 
 	public CustomerTableModel() {
-		passengerDAO = new PassengerDAO();
-		passengers = passengerDAO.getAllPassengers();
+		HashMap<String, String> payload = new HashMap<>();
+		passengers = (List<Passenger>) ServerFetcher.fetch("passenger", "getAllPassengers", payload);
 	}
 
 	@Override

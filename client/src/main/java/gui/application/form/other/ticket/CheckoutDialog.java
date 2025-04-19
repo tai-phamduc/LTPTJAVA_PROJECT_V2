@@ -20,10 +20,6 @@ import javax.swing.JTextArea;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
-import dao.CustomerDAO;
-import dao.OrderDAO;
-import dao.PassengerDAO;
-import dao.ServiceDetailDAO;
 import entity.*;
 import gui.other.CreateTrainTickets;
 import net.miginfocom.swing.MigLayout;
@@ -71,10 +67,6 @@ public class CheckoutDialog extends JDialog {
 	private JPanel thongTinDichVuLabelContainer;
 	private JPanel donDatLabelContainer;
 	private JPanel thanhToanButtonContainer;
-	private CustomerDAO customerDAO;
-	private OrderDAO orderDAO;
-	private PassengerDAO passengerDAO;
-	private ServiceDetailDAO serviceDetailDAO;
 	private HashMap<String, String> payload;
 
 	public CheckoutDialog(TrainJourneyOptionItem trainJourneyOptionItem, ArrayList<Ticket> chosenTicketList,
@@ -82,10 +74,6 @@ public class CheckoutDialog extends JDialog {
 			ServiceChoosingDialog serviceChoosingDialog, TicketInfo ticketInfo) {
 
 		this.customer = customer;
-		customerDAO = new CustomerDAO();
-		orderDAO = new OrderDAO();
-		passengerDAO = new PassengerDAO();
-		serviceDetailDAO = new ServiceDetailDAO();
 
 		this.setLayout(new BorderLayout());
 		container = new JPanel(new MigLayout("wrap, fill", "[fill]", "[shrink 150][fill, grow][]"));
@@ -168,7 +156,7 @@ public class CheckoutDialog extends JDialog {
 			String seatNumber = ticket.getSeat().getSeatNumber() + "";
 			String coachType = ticket.getSeat().getCoach().getCoachType();
 
-			HashMap<String, String> payload = new HashMap<>();
+			payload = new HashMap<>();
 			payload.put("trainJourneyID", trainJourneyOptionItem.getTrainJourneyID());
 
 			TrainJourney journey = (TrainJourney) ServerFetcher.fetch(
@@ -426,7 +414,7 @@ public class CheckoutDialog extends JDialog {
 		thanhToanButton.addActionListener(e -> {
 
 			if (ticketInfo != null) {
-				HashMap<String, String> payload = new HashMap<>();
+				payload = new HashMap<>();
 				payload.put("trainJourneyID", trainJourneyOptionItem.getTrainJourneyID());
 				payload.put("seatID", String.valueOf(ticketInfo.getSeat().getSeatID()));
 				payload.put("passengerID", ticketInfo.getPassenger().getPassengerID());
@@ -536,20 +524,51 @@ public class CheckoutDialog extends JDialog {
 				String note = ghiChuTextArea.getText().trim();
 
 				String orderID;
-				if (customerDAO.getCustomerByEmail(customer.getEmail()) != null) {
-					orderID = orderDAO.addOrder(LocalDate.now(), note, "Đã Thanh Toán",
-							customerDAO.getCustomerByEmail(customer.getEmail()),
-							new TrainJourney(trainJourneyOptionItem.getTrainJourneyID()), employee);
+
+				payload = new HashMap<>();
+				payload.put("email", customer.getEmail());
+				Customer fetchedCustomer = (Customer) ServerFetcher.fetch("customer", "getCustomerByEmail", payload);
+
+				if (fetchedCustomer != null) {
+
+					HashMap<String, String> payload = new HashMap<>();
+					payload.put("orderDate", LocalDate.now().toString());
+					payload.put("note", note);
+					payload.put("orderStatus", "Đã Thanh Toán");
+					payload.put("customerID", fetchedCustomer.getCustomerID());
+					payload.put("trainJourneyID", trainJourneyOptionItem.getTrainJourneyID());
+					payload.put("employeeID", employee.getEmployeeID());
+					orderID = (String) ServerFetcher.fetch("order", "addOrder", payload);
+
 				} else {
-					String customerID = customerDAO.addCustomer(customer);
+					payload = new HashMap<>();
+					payload.put("fullName", customer.getFullName());
+					payload.put("phoneNumber", customer.getPhoneNumber());
+					payload.put("email", customer.getEmail());
+					payload.put("identificationNumber", customer.getIdentificationNumber());
+					String customerID = (String) ServerFetcher.fetch("customer", "addCustomer", payload);
+
 					customer.setCustomerID(customerID);
-					orderID = orderDAO.addOrder(LocalDate.now(), note, "Đã Thanh Toán", customer,
-							new TrainJourney(trainJourneyOptionItem.getTrainJourneyID()), employee);
+					HashMap<String, String> payload = new HashMap<>();
+					payload.put("orderDate", LocalDate.now().toString());
+					payload.put("note", note);
+					payload.put("orderStatus", "Đã Thanh Toán");
+					payload.put("customerID", customer.getCustomerID());
+					payload.put("trainJourneyID", trainJourneyOptionItem.getTrainJourneyID());
+					payload.put("employeeID", employee.getEmployeeID());
+
+					orderID = (String) ServerFetcher.fetch("order", "addOrder", payload);
+
 				}
 //				System.out.println(orderID);
 				for (Ticket chosenTicket : chosenTicketList) {
 					// insert passenger first
-					String passengerID = passengerDAO.addPassenger(chosenTicket.getPassenger());
+					HashMap<String, String> payload = new HashMap<>();
+					payload.put("fullName", chosenTicket.getPassenger().getFullName());
+					payload.put("identifier", chosenTicket.getPassenger().getIdentifier());
+					payload.put("passengerType", chosenTicket.getPassenger().getPassengerType());
+					String passengerID = (String) ServerFetcher.fetch("passenger", "addPassenger", payload);
+
 					chosenTicket.getPassenger().setPassengerID(passengerID);
 
 					// insert the ticket
@@ -582,8 +601,11 @@ public class CheckoutDialog extends JDialog {
 					}
 
 					for (ServiceDetail serviceDetail : chosenServiceDetailList) {
-						serviceDetailDAO.themChiTietDichVu(serviceDetail.getService(), new Order(orderID),
-								serviceDetail.getQuantity());
+						payload = new HashMap<>();
+						payload.put("serviceID", serviceDetail.getService().getServiceID());
+						payload.put("orderID", orderID);
+						payload.put("quantity", String.valueOf(serviceDetail.getQuantity()));
+						ServerFetcher.fetch("servicedetail", "themChiTietDichVu", payload);
 					}
 
 					DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -600,7 +622,7 @@ public class CheckoutDialog extends JDialog {
 					String loaiVe = "Toàn vé";
 					String loaiCho = chosenTicket.getSeat().getCoach().getCoachType();
 
-					HashMap<String, String> payload = new HashMap<>();
+					payload = new HashMap<>();
 					payload.put("trainJourneyID", trainJourneyOptionItem.getTrainJourneyID());
 					TrainJourney journey = (TrainJourney) ServerFetcher.fetch(
 							"trainjourney",
